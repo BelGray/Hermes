@@ -213,7 +213,7 @@ class DBRequests:
         result = cursor.fetchone()
         if result:
             try:
-                cursor.execute("UPDATE voice_draws_members SET time_in_channel = ? WHERE user_id LIKE ? AND draw_id LIKE ?", [time_in_channel, user_id, draw_id])
+                cursor.execute("UPDATE voice_draws_members SET time_in_channel = time_in_channel + ? WHERE user_id LIKE ? AND draw_id LIKE ?", [time_in_channel, user_id, draw_id])
                 bot_db.commit()
                 print(f"[update_voice_draw_member_by_id | voice_draws_members] Updated draw member with user_id: {user_id}")
             except Exception as e:
@@ -256,7 +256,7 @@ class DBRequests:
         result = cursor.fetchone()
         if result:
             try:
-                cursor.execute("UPDATE text_draws_members SET messages_in_channel = ? WHERE user_id LIKE ? AND draw_id LIKE ?", [messages_in_channel, user_id, draw_id])
+                cursor.execute("UPDATE text_draws_members SET messages_in_channel = messages_in_channel + ? WHERE user_id LIKE ? AND draw_id LIKE ?", [messages_in_channel, user_id, draw_id])
                 bot_db.commit()
                 print(f"[update_text_draw_member_by_id | text_draws_members] Updated draw member with user_id: {user_id}")
             except Exception as e:

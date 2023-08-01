@@ -1,8 +1,1 @@
-{
-  "config": {
-      "current_draw" : {
-        "id": null,
-        "type": null
-      }
-  }
-}
+{"config": {"bot_token": null, "current_draw": {"id": null, "type": null}}}

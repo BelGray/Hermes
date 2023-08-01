@@ -1,5 +1,6 @@
 import json
 from tools.draw_types import DrawTypes
+from tools.BGConsole import BGC
 def set_current_draw(id: int, type: DrawTypes):
     with open("bot_config.json", 'r') as f:
         loader = json.load(f)
@@ -33,6 +34,6 @@ def get_bot_token():
         f.close()
     if loader["config"]["bot_token"] != None:
         return loader["config"]["bot_token"]
-    new_token = str(input("В файле конфигурации bot_config.json отсутствует токен. Введи токен бота здесь /> "))
+    new_token = BGC.scan(label="В файле конфигурации bot_config.json отсутствует токен. Введи токен бота здесь /> ", label_color=BGC.Color.CRIMSON)
     set_bot_token(new_token)
     return new_token

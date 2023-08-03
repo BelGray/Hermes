@@ -76,10 +76,13 @@ class DBRequests:
                     """, [discord_id, winner_count])
                 bot_db.commit()
                 Log.sql(TAG, f"Inserted new user with discord_id {discord_id}", TABLE_NAME)
+                return True, cursor.lastrowid
             except Exception as e:
                 Log.e(TAG, f"EXCEPTION: {e}")
+                return False, None
         else:
             Log.sql(TAG, f"User with discord_id {discord_id} already exists in database", TABLE_NAME)
+            return False, None
 
     @staticmethod
     async def update_user_by_id(id: int, winner_count: int):
@@ -127,8 +130,10 @@ class DBRequests:
                         """, [discord_channel_id, messages_count, time, convert_boolean(completed)])
                 bot_db.commit()
                 Log.sql(TAG, f"Inserted new text draw", TABLE_NAME)
+                return True, cursor.lastrowid
             except Exception as e:
                 Log.e(TAG, f"EXCEPTION: {e}")
+                return False, None
 
     @staticmethod
     async def update_text_draw_by_id(id: int, completed: bool):
@@ -176,8 +181,10 @@ class DBRequests:
                             """, [discord_channel_id, user_in_channel_time, time, convert_boolean(completed)])
             bot_db.commit()
             Log.sql(TAG, f"Inserted new voice draw", TABLE_NAME)
+            return True, cursor.lastrowid
         except Exception as e:
             Log.e(TAG, f"EXCEPTION: {e}")
+            return False, None
 
     @staticmethod
     async def update_voice_draw_by_id(id: int, completed: bool):
@@ -224,8 +231,10 @@ class DBRequests:
                                 """, [draw_id, user_id, time_in_channel])
             bot_db.commit()
             Log.sql(TAG, f"Inserted new voice draw member with user_id: {user_id}", TABLE_NAME)
+            return True, cursor.lastrowid
         except Exception as e:
             Log.e(TAG, f"EXCEPTION: {e}")
+            return False, None
 
     @staticmethod
     async def update_voice_draw_member_by_id(user_id: int, draw_id: int, time_in_channel: int):
@@ -273,8 +282,10 @@ class DBRequests:
                                 """, [draw_id, user_id, messages_in_channel])
             bot_db.commit()
             Log.sql(TAG, f"Inserted new text draw member with user_id: {user_id}", TABLE_NAME)
+            return True, cursor.lastrowid
         except Exception as e:
             Log.e(TAG, f"EXCEPTION: {e}")
+            return False, None
 
     @staticmethod
     async def update_text_draw_member_by_id(user_id: int, draw_id: int, messages_in_channel: int):

@@ -1,1 +1,4 @@
-{"config": {"bot_token": null, "draw_channel": null, "current_draw": {"id": null, "type": null}}}
+{"config": {"bot_token": null, "draw_channel": null, "current_draw": {"id": null, "type": null,
+  "text": null, "award": null,
+  "time": null, "need_count": null
+}}}

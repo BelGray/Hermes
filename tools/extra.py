@@ -4,8 +4,6 @@ class Extra:
     def __init__(self):
         self.__ext = {}
 
-    def __int__(self):
-        self.__ext = {}
     async def put(self, key: str, value):
         self.__ext[key] = value
 

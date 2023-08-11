@@ -1,4 +1,1 @@
-{"config": {"bot_token": null, "draw_channel": null, "current_draw": {"id": null, "type": null,
-  "text": null, "award": null,
-  "time": null, "need_count": null
-}}}
+{"config": {"bot_token": null, "max_winners": 100, "draw_channel": null, "current_draw": {"id": null, "type": null, "text": null, "award": null, "time": null, "need_count": null, "announcement": null}}}

@@ -20,8 +20,8 @@ class DBRequests:
         CREATE TABLE IF NOT EXISTS text_draws (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         discord_channel_id VARCHAR,
-        messages_count INTEGER,
-        time VARCHAR,
+        messages_count BIGINT,
+        time BIGINT,
         completed INTEGER
         );
         """)
@@ -31,8 +31,8 @@ class DBRequests:
         CREATE TABLE IF NOT EXISTS voice_draws (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         discord_channel_id VARCHAR,
-        user_in_channel_time VARCHAR,
-        time VARCHAR,
+        user_in_channel_time BIGINT,
+        time BIGINT,
         completed INTEGER
         );
         """)
@@ -42,7 +42,7 @@ class DBRequests:
         CREATE TABLE IF NOT EXISTS text_draws_members (
         draw_id INTEGER,
         user_id INTEGER,
-        messages_in_channel INTEGER
+        messages_in_channel BIGINT
         );
         """)
         bot_db.commit()
@@ -51,7 +51,7 @@ class DBRequests:
         CREATE TABLE IF NOT EXISTS voice_draws_members (
         draw_id INTEGER,
         user_id INTEGER,
-        time_in_channel INTEGER
+        time_in_channel BIGINT
         );
         """)
         bot_db.commit()
@@ -93,7 +93,7 @@ class DBRequests:
         result = cursor.fetchone()
         if result:
             try:
-                cursor.execute("UPDATE users SET winner_count = ? WHERE id LIKE ?", [winner_count, id])
+                cursor.execute("UPDATE users SET winner_count = winner_count + ? WHERE id LIKE ?", [winner_count, id])
                 bot_db.commit()
                 Log.sql(TAG, f"Updated user with id: {id}", TABLE_NAME)
             except Exception as e:
@@ -114,7 +114,19 @@ class DBRequests:
         return False, None
 
     @staticmethod
-    async def insert_text_draw(discord_channel_id: str, messages_count: int, time: str, completed: bool):
+    async def get_user_by_discord_id(discord_id: str):
+        """table name: users"""
+        TAG = "get_user_by_discord_id"
+        TABLE_NAME = "users"
+        cursor.execute(f"SELECT * FROM users WHERE discord_id = ?", [discord_id])
+        result = cursor.fetchone()
+        if result:
+            return True, result
+        Log.sql(TAG, f"User with discord_id {discord_id} is not found", TABLE_NAME)
+        return False, None
+
+    @staticmethod
+    async def insert_text_draw(discord_channel_id: str, messages_count: float, time: float, completed: bool):
             """table_name: text_draws"""
             TAG = "insert_text_draw"
             TABLE_NAME = "text_draws"
@@ -136,7 +148,7 @@ class DBRequests:
                 return False, None
 
     @staticmethod
-    async def update_text_draw_by_id(id: int, completed: bool):
+    async def update_text_draw_by_id(id: int, time: float, completed: bool):
         """table_name: text_draws"""
         TAG = "update_text_draw_by_id"
         TABLE_NAME = "text_draws"
@@ -144,7 +156,7 @@ class DBRequests:
         result = cursor.fetchone()
         if result:
             try:
-                cursor.execute("UPDATE text_draws SET completed = ? WHERE id LIKE ?", [convert_boolean(completed), id])
+                cursor.execute("UPDATE text_draws SET completed = ?, time = time + ? WHERE id LIKE ?", [convert_boolean(completed), time, id])
                 bot_db.commit()
                 Log.sql(TAG, f"Updated draw with id: {id}", TABLE_NAME)
             except Exception as e:
@@ -165,7 +177,7 @@ class DBRequests:
         return False, None
 
     @staticmethod
-    async def insert_voice_draw(discord_channel_id: str, user_in_channel_time: int, time: str, completed: bool):
+    async def insert_voice_draw(discord_channel_id: str, user_in_channel_time: float, time: float, completed: bool):
         """table_name: voice_draws"""
         TAG = "insert_voice_draw"
         TABLE_NAME = "voice_draws"
@@ -187,7 +199,7 @@ class DBRequests:
             return False, None
 
     @staticmethod
-    async def update_voice_draw_by_id(id: int, completed: bool):
+    async def update_voice_draw_by_id(id: int, time: float, completed: bool):
         """table_name: voice_draws"""
         TAG = "update_voice_draw_by_id"
         TABLE_NAME = "voice_draws"
@@ -195,7 +207,7 @@ class DBRequests:
         result = cursor.fetchone()
         if result:
             try:
-                cursor.execute("UPDATE voice_draws SET completed = ? WHERE id LIKE ?", [convert_boolean(completed), id])
+                cursor.execute("UPDATE voice_draws SET completed = ?, time = time + ? WHERE id LIKE ?", [convert_boolean(completed), time, id])
                 bot_db.commit()
                 Log.sql(TAG, f"Updated draw with id: {id}", TABLE_NAME)
             except Exception as e:
@@ -220,10 +232,12 @@ class DBRequests:
         """table_name: voice_draws_members"""
         TAG = "insert_voice_draw_member"
         TABLE_NAME = "voice_draws_members"
+        if (await DBRequests.get_voice_draw_member_by_id(user_id, draw_id))[0]:
+            Log.sql(TAG, f"Voice draw member with user_id {user_id} already exists", TABLE_NAME)
+            return False, None
         try:
             cursor.execute(f"""
                                 INSERT INTO voice_draws_members VALUES(
-                                NULL,
                                 ?,
                                 ?,
                                 ?
@@ -271,10 +285,12 @@ class DBRequests:
         """table_name: text_draws_members"""
         TAG = "insert_text_draw_member"
         TABLE_NAME = "text_draws_members"
+        if (await DBRequests.get_text_draw_member_by_id(user_id, draw_id))[0]:
+            Log.sql(TAG, f"Text draw member with user_id {user_id} already exists", TABLE_NAME)
+            return False, None
         try:
             cursor.execute(f"""
                                 INSERT INTO text_draws_members VALUES(
-                                NULL,
                                 ?,
                                 ?,
                                 ?
@@ -315,3 +331,26 @@ class DBRequests:
             return True, result
         Log.sql(TAG, f"Text draw member with user_id {user_id} is not found", TABLE_NAME)
         return False, None
+
+    @staticmethod
+    async def get_draw_winners(draw_id: int, type: DrawTypes, need_count: str):
+        if type == DrawTypes.TEXT:
+            cursor.execute("SELECT * FROM text_draws_members WHERE draw_id LIKE ? ORDER BY ABS(? - messages_in_channel) LIMIT ?", [draw_id, int(need_count), get_max_winners()])
+            return cursor.fetchall()
+        if type == DrawTypes.VOICE:
+            cursor.execute(
+                "SELECT * FROM voice_draws_members WHERE draw_id LIKE ? ORDER BY ABS(? - time_in_channel) LIMIT ?",
+                [draw_id, int(need_count), get_max_winners()])
+            return cursor.fetchall()
+
+    @staticmethod
+    async def get_top_users_of_current_draw():
+        current = get_current_draw()
+        id = current['id']
+        if id != None and current['type'] == 'voice':
+            cursor.execute("SELECT * FROM voice_draws_members WHERE draw_id LIKE ? ORDER BY time_in_channel DESC LIMIT 30", [id])
+            return cursor.fetchall()
+        if id != None and current['type'] == 'text':
+            cursor.execute("SELECT * FROM text_draws_members WHERE draw_id LIKE ? ORDER BY messages_in_channel DESC LIMIT 30", [id])
+            return cursor.fetchall()
+        return None

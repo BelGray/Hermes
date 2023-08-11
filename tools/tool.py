@@ -1,9 +1,7 @@
-import asyncio
 import datetime
 import json
 
 import disnake
-import pytz as pytz
 from disnake.ext.commands import Bot
 
 from tools.logger import Log

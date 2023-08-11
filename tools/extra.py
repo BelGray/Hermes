@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 class Extra:
 
     def __init__(self):

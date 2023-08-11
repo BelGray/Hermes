@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from tools.BGConsole import BGC
 
 class Log:

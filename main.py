@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 import time
-
 import disnake
 from disnake.ext import commands
 from database.db_req import DBRequests
@@ -15,6 +15,8 @@ from disnake.enums import ButtonStyle, TextInputStyle
 import json
 from disnake import Embed
 from disnake.utils import get
+
+cont = input("При запуске данной программы будет запущен бот! (Нажмите Enter для продолжения))")
 
 bot = commands.Bot(command_prefix="#", case_insensitive=True, intents=disnake.Intents.all())
 bot.remove_command('help')
